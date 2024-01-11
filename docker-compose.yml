@@ -1,0 +1,50 @@
+version: '3.5'
+
+services:
+  application:
+    container_name: application
+    build:
+      context: ./docker
+    volumes:
+      - ./:/appdata/www
+    environment:
+      XDEBUG_CLIENT_HOST: host.docker.internal
+      XDEBUG_CLIENT_PORT: 9003
+      PHP_IDE_CONFIG: serverName=application
+    ports:
+      - '8000:8000'
+      - '443:443'
+    networks:
+      - application-network
+    working_dir: /appdata/www
+    command: symfony server:start
+
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Cambia a tu contraseña
+      MYSQL_DATABASE: mydatabase # Nombre de tu base de datos
+      MYSQL_USER: user # Usuario de la base de datos
+      MYSQL_PASSWORD: userpassword # Contraseña del usuario
+    ports:
+      - '3306:3306' # Puerto por defecto de MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - application-network
+
+  mailcatcher:
+    container_name: mailcatcher
+    image: schickling/mailcatcher
+    ports:
+      - '1080:1080' # Puerto para la interfaz web
+      - '1025:1025' # Puerto para el SMTP server
+    networks:
+      - application-network
+
+networks:
+  application-network:
+
+volumes:
+  mysql-data:
